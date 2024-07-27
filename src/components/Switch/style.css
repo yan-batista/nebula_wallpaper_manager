@@ -1,0 +1,33 @@
+.switch_container {
+  position: relative;
+  cursor: pointer;
+}
+
+.bar {
+  width: 35px;
+  height: 8px;
+  background-color: #BBBBBB
+}
+
+.circle {
+  background-color: #D9D9D9;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  position: absolute;
+  top: -6px;
+  left: -2px;
+  transition: ease-out;
+  transition-duration: 100ms;
+}
+
+.switch_container.switch_active > .bar {
+  background-color: #296FA0;
+}
+
+.switch_container.switch_active > .circle {
+  background-color: #2183C9;
+  left: 18px;
+  transition: ease-out;
+  transition-duration: 100ms;
+}
