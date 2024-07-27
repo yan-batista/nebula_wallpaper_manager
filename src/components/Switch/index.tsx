@@ -1,15 +1,13 @@
-import { useState } from "react";
 import "./style.css"
 
-const Switch = () => {
-  const [switchActive, setSwitchActive] = useState<boolean>(false)
+interface SwitchProps {
+  action: () => void
+  active: boolean
+}
 
-  function toggleSwitch() {
-    setSwitchActive(prevState => !prevState)
-  }
-
+const Switch: React.FC<SwitchProps> = ({action, active}: SwitchProps) => {
   return(
-    <div className={`switch_container ${switchActive ? "switch_active" : ""}`} onClick={toggleSwitch}>
+    <div className={`switch_container ${active ? "switch_active" : ""}`} onClick={action}>
       <div className="bar"></div>
       <div className="circle"></div>
     </div>

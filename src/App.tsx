@@ -22,13 +22,13 @@ function App() {
         <p className={`${isActive ? "" : "window_active"}`} onClick={onClickActivateSettings}>Settings</p>
       </header>
 
-      <div className="content">
-        {isActive ? (
+      <div className={`content ${isActive ? "" : "hidden_page"}`}>
           <ImagesPage />
-        ) : (
+      </div>
+
+      <div className={`content ${isActive ? "hidden_page" : ""}`}>
           <SettingsPage />
-        )}
-        </div>
+      </div>
     </>
   );
 }

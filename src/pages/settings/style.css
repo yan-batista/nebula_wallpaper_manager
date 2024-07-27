@@ -32,12 +32,26 @@
   font-size: 18px;
   max-width: 50px;
 }
+.delay_options > input::-webkit-outer-spin-button,
+.delay_options > input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
 
 .delay_options > svg:not(:last-child) {
   margin-right: 8px;
 }
 
-.delay_options > svg:hover {
-  cursor: pointer;
+.setting_container:not(.setting_disabled) > .delay_options > svg:hover {
   stroke: #2183C9;
+  cursor: pointer;
+}
+
+.setting_disabled {
+  opacity: .75;
+}
+
+.setting_disabled,
+.setting_disabled *:hover {
+  cursor: not-allowed;
 }

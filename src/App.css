@@ -59,3 +59,7 @@ header p.window_active {
   display: flex;
   flex-direction: row;
 }
+
+.hidden_page {
+  display: none;
+}
