@@ -5,7 +5,7 @@ import "./App.css";
 
 
 function App() {
-  const [isActive, setIsActive] = useState<boolean>(false);
+  const [isActive, setIsActive] = useState<boolean>(true);
 
   function onClickActivateImages() {
     setIsActive(true)

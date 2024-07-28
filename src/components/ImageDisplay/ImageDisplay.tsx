@@ -1,11 +1,16 @@
 import ImageFileIcon from '../icons/ImageFile'
 import "./style.css"
 
-const ImageDisplay = () => {
+interface ImageDisplayProps {
+  name: string,
+  image_path?: string,
+}
+
+const ImageDisplay: React.FC<ImageDisplayProps> = ({name, image_path = ""}: ImageDisplayProps) => {
   return (
     <div className="image_display">
-      <ImageFileIcon />
-      <p>wallpaper_file.png</p>
+      {image_path == "" ? <ImageFileIcon /> : <img src={window.__TAURI__.convertFileSrc(image_path, "asset")} className="thumbnail"/>}
+      <p>{name}</p>
     </div>
   )
 }

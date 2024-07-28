@@ -15,6 +15,14 @@
       "shell": {
         "all": false,
         "open": true
+      },
+      "protocol": {
+        "asset": true,
+        "assetScope": [
+          "**/*.jpg",
+          "**/*.png",
+          "**/*.jpeg"
+        ]
       }
     },
     "windows": [
@@ -27,7 +35,7 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost"
     },
     "bundle": {
       "active": true,

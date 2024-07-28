@@ -1,9 +1,37 @@
 .image_display {
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
-  width: fit-content;
-  height: fit-content;
   padding: 15px;
+  width: 174.3px;
+  height: 120px;
+  overflow: hidden;
+}
+
+.image_display:hover {
+  background-color: rgba(255, 255, 255, 0.171);
+  transition: ease-in;
+  transition-duration: 100ms;
+}
+
+.image_display:active {
+  background-color: rgba(255, 255, 255, 0.089);
+  transition: ease-out;
+  transition-duration: 30ms;
+}
+
+.image_display > p {
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  user-select: none;
+}
+
+.thumbnail {
+  width: 100px;
+  height: auto;
+  user-select: none;
 }
