@@ -11,21 +11,51 @@ type ImageData = {
   path: string;
 }
 
+type FolderData = {
+  name: string;
+  path: string;
+  active: boolean;
+}
+
 const ImagesPage = () => {
   const [images, setImages] = useState<ImageData[]>([]);
-  
+  const [folders, setFolders] = useState<FolderData[]>([])
+
+  /**
+   * Finds the default Images folder and create a new item
+   * on the folders array
+   */
   useEffect(() => {
-    async function fetchImages() {
+    async function getPicturesFolder() {
       try {
-        const result: ImageData[] = await invoke('get_images_from_path', {dirPath: 'C:\\Users\\ybati\\Imagens\\Imagens\\wallpapers'})
-        setImages(result)
+        const result: string = await invoke('get_pictures_folder_path')
+        setFolders([{name: "Images", path: result, active: true}])
       } catch (err) {
         console.error('Failed to fetch images', err)
       }
     }
+    getPicturesFolder()
+  }, [])
 
-    fetchImages();
-  }, []);
+  /**
+   * If folders variable is not empty,
+   * loads images from active folder
+   */
+  useEffect(() => {
+    if(folders.length > 0) {
+      const active_folder = folders.find(item => item.active === true)
+      if (active_folder) fetchImages(active_folder)
+    }
+  }, [folders])
+
+  async function fetchImages(folder: FolderData) {
+    try {
+      const result: ImageData[] = await invoke('get_images_from_path', {dirPath: folder.path})
+      setImages(result)
+    } catch (err) {
+      console.error('Failed to fetch images', err)
+    }
+  }
 
   return (
     <>

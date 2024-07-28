@@ -4,11 +4,20 @@
 use std::fs;
 use std::path::Path;
 use serde::Serialize;
+use dirs::home_dir;
 
 #[derive(Serialize)]
 struct ImageData {
     name: String,
     path: String,
+}
+
+#[tauri::command]
+fn get_pictures_folder_path() -> Result<String, String> {
+    match dirs::picture_dir() {
+        Some(path) => Ok(path.to_string_lossy().to_string()),
+        None => Err("Could not find the Pictures folder".into()),
+    }
 }
 
 #[tauri::command]
@@ -41,7 +50,7 @@ fn get_images_from_path(dir_path: String) -> Result<Vec<ImageData>, String> {
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::default().build())
-        .invoke_handler(tauri::generate_handler![get_images_from_path])
+        .invoke_handler(tauri::generate_handler![get_images_from_path, get_pictures_folder_path])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
