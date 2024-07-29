@@ -1,9 +1,12 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::fs;
+use std::{env, fs};
 use std::path::Path;
 use serde::Serialize;
+use std::ffi::OsString;
+use std::os::windows::ffi::OsStrExt;
+use winapi::um::winuser::{SystemParametersInfoW, SPI_SETDESKWALLPAPER, SPIF_UPDATEINIFILE, SPIF_SENDCHANGE};
 
 #[derive(Serialize)]
 struct ImageData {
@@ -46,10 +49,32 @@ fn get_images_from_path(dir_path: String) -> Result<Vec<ImageData>, String> {
     Ok(images)
 }
 
+#[tauri::command]
+fn set_wallpaper(path: &str) {
+    let os = env::consts::OS;
+
+    match os {
+        "windows" => {
+            let path_wide: Vec<u16> = OsString::from(path).encode_wide().chain(Some(0).into_iter()).collect();
+            unsafe {
+                SystemParametersInfoW(
+                    SPI_SETDESKWALLPAPER,
+                    0,
+                    path_wide.as_ptr() as *mut _,
+                    SPIF_UPDATEINIFILE | SPIF_SENDCHANGE,
+                );
+            }
+        }
+        _ => {
+            eprintln!("Unsupported OS: {}", os);
+        }
+    }
+}
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::default().build())
-        .invoke_handler(tauri::generate_handler![get_images_from_path, get_pictures_folder_path])
+        .invoke_handler(tauri::generate_handler![get_images_from_path, get_pictures_folder_path, set_wallpaper])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

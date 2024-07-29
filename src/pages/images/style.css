@@ -63,18 +63,6 @@
   max-height: 600px;
 }
 
-/* .images_container {
-  -ms-overflow-style: none; 
-  scrollbar-width: none; 
-} */
-
-/* Firefox (uncomment to work in Firefox, although other properties will not work!)  */
-/** {
-  scrollbar-width: thin;
-  scrollbar-color: #397524 #DFE9EB;
-}*/
-
-/* Chrome, Edge and Safari */
 *::-webkit-scrollbar {
   height: 10px;
   width: 13px;
