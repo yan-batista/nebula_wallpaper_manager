@@ -6,6 +6,7 @@ import "./style.css"
 import { open } from '@tauri-apps/api/dialog';
 import { invoke } from "@tauri-apps/api/tauri";
 import { useEffect, useState } from "react";
+import { Store } from "tauri-plugin-store-api";
 
 type ImageData = {
   name: string;
@@ -18,9 +19,27 @@ type FolderData = {
   active: boolean;
 }
 
-const ImagesPage = () => {
+interface ImagePageProps {
+  store: Store
+}
+
+const ImagesPage: React.FC<ImagePageProps> = ({store}: ImagePageProps) => {
   const [images, setImages] = useState<ImageData[]>([]);
   const [folders, setFolders] = useState<FolderData[]>([])
+
+  useEffect(() => {
+    async function getStoredFolders() {
+      let stored_folders: FolderData[] | null = folders
+      try {
+        stored_folders = await store.get<FolderData[]>("folders")
+      } catch(err) {
+        console.error(err)
+      } finally {
+        if (stored_folders) setFolders(stored_folders)
+      }
+    }
+    getStoredFolders()
+  }, []);
 
   /**
    * If folders variable is not empty,
@@ -33,6 +52,11 @@ const ImagesPage = () => {
     }
   }, [folders])
 
+  console.log(folders)
+
+  /**
+   * Sends the image path to the rust function that handles local image loading 
+   */
   async function fetchImages(folder: FolderData) {
     try {
       const result: ImageData[] = await invoke('get_images_from_path', {dirPath: folder.path})
@@ -54,15 +78,36 @@ const ImagesPage = () => {
         multiple: false,
         title: 'Select a Directory'
       });
+
+      const isFolderAlreadyOpen = (selectedPath: string): boolean => {
+        const isOpen = folders.filter(folder => folder.path === selectedPath)
+        if (isOpen.length > 0) return true
+        else return false
+      }
   
-      if (selectedPath && typeof(selectedPath) === 'string') {
+      // If folder is not open, load it
+      if (selectedPath && typeof(selectedPath) === 'string' && !isFolderAlreadyOpen(selectedPath)) {
         const folder_name = selectedPath.split("\\")
         const new_folder: FolderData = {
           name: folder_name[folder_name.length-1],
           path: selectedPath,
-          active: false,
+          active: true,
         }
         setFolders(prevState => [...prevState, new_folder])
+        store.set('folders', [...folders, new_folder])
+      // if folder is already open, just set it to active and fetch images
+      } else if(selectedPath && typeof(selectedPath) === 'string' && isFolderAlreadyOpen(selectedPath)) {
+          setFolders(prevState => {
+            const new_folders = prevState.map(prev => {
+              if (selectedPath === prev.path) {
+                return {...prev, active: true}
+              } else {
+                return {...prev, active: false}
+              }
+            })
+            store.set('folders', new_folders)
+            return new_folders
+          })
       }
     } catch (err) {
       console.error('Failed to select directory', err);
@@ -73,7 +118,9 @@ const ImagesPage = () => {
    * Removes the currently active folder
    */
   function removeActiveDirectory() {
-      setFolders(prevState => prevState.filter(prev => !prev.active))
+    const filtered_folders = folders.filter(folder => !folder.active)
+    setFolders(filtered_folders)
+    store.set('folders', filtered_folders)
   }
 
   /**
@@ -83,15 +130,18 @@ const ImagesPage = () => {
   function onClickUpdateActive(event: React.MouseEvent<HTMLDivElement>) {
     const target = event.currentTarget.dataset.path
     setFolders(prevState => {
-      return prevState.map(prev => {
-        if (target === prev.path && !prev.active) {
+      const new_folders = prevState.map(prev => {
+        if (target === prev.path) {
           return {...prev, active: true}
         } else {
           return {...prev, active: false}
         }
       })
+      store.set('folders', new_folders)
+      return new_folders
     })
   }
+
 
   return (
     <>

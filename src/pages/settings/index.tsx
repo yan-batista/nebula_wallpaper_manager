@@ -12,8 +12,11 @@ interface SettingsType {
   random_slideshow: boolean
 }
 
-const SettingsPage = () => {
-  const [store, _] = useState<Store>(new Store("settings.dat"))
+interface SettingsPageProps {
+  store: Store
+}
+
+const SettingsPage: React.FC<SettingsPageProps> = ({store}: SettingsPageProps) => {
   const [settings, setSettings] = useState<SettingsType>({
     random: false,
     slideshow: false,
