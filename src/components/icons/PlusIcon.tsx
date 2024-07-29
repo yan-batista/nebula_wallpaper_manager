@@ -1,8 +1,9 @@
 interface PlusIconProps {
   action?: () => void
+  disabled?: boolean
 }
 
-const PlusIcon: React.FC<PlusIconProps> = ({action = () => {}}: PlusIconProps) => {
+const PlusIcon: React.FC<PlusIconProps> = ({action = () => {}, disabled}: PlusIconProps) => {
   return(
     <svg 
       xmlns="http://www.w3.org/2000/svg" 
@@ -15,7 +16,11 @@ const PlusIcon: React.FC<PlusIconProps> = ({action = () => {}}: PlusIconProps) =
       strokeLinecap="round" 
       strokeLinejoin="round" 
       className="feather feather-plus"
-      onClick={action}>
+      onClick={() => {
+        if(!disabled) {
+          action()
+        }
+      }}>
         <line x1="12" y1="5" x2="12" y2="19"></line>
         <line x1="5" y1="12" x2="19" y2="12"></line>
       </svg>

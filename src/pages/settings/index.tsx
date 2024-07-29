@@ -95,14 +95,14 @@ const SettingsPage: React.FC<SettingsPageProps> = ({store}: SettingsPageProps) =
             onChange={onChangeDelay} 
             disabled={!settings.slideshow}
           />
-          <MinusIcon action={decreaseDelay}/>
-          <PlusIcon action={increaseDelay}/>
+          <MinusIcon action={decreaseDelay} disabled={!settings.slideshow} />
+          <PlusIcon action={increaseDelay} disabled={!settings.slideshow} />
         </div>
       </div>
 
       <div className={`setting_container ${settings.slideshow ? "" : "setting_disabled"}`}>
         <p>Play in random order</p>
-        <Switch active={settings.random_slideshow} action={onClickToggleSlideshowOrder}/>
+        <Switch active={settings.random_slideshow} action={onClickToggleSlideshowOrder} disabled={!settings.slideshow}/>
       </div>
     </div>
   )

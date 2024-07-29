@@ -1,8 +1,9 @@
 interface MinusIconProps {
   action?: () => void
+  disabled?: boolean
 }
 
-const FolderIcon: React.FC<MinusIconProps> = ({action = () => {}}: MinusIconProps) => {
+const FolderIcon: React.FC<MinusIconProps> = ({action = () => {}, disabled}: MinusIconProps) => {
   return(
     <svg 
       xmlns="http://www.w3.org/2000/svg" 
@@ -15,7 +16,11 @@ const FolderIcon: React.FC<MinusIconProps> = ({action = () => {}}: MinusIconProp
       strokeLinecap="round" 
       strokeLinejoin="round" 
       className="feather feather-minus"
-      onClick={action}>
+      onClick={() => {
+        if(!disabled) {
+          action()
+        }
+      }}>
         <line x1="5" y1="12" x2="19" y2="12"></line>
     </svg>
   )
