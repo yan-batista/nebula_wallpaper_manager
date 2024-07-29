@@ -4,7 +4,6 @@
 use std::fs;
 use std::path::Path;
 use serde::Serialize;
-use dirs::home_dir;
 
 #[derive(Serialize)]
 struct ImageData {
