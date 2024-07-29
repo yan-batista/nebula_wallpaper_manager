@@ -32,8 +32,8 @@
     "windows": [
       {
         "title": "Wallpaper Manager",
-        "width": 800,
-        "height": 600,
+        "width": 998,
+        "height": 700,
         "resizable": false,
         "alwaysOnTop": true
       }
