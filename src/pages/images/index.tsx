@@ -19,12 +19,21 @@ type FolderData = {
   active: boolean;
 }
 
-interface ImagePageProps {
-  store: Store
+interface SettingsType {
+  random: boolean,
+  slideshow: boolean,
+  delay: number,
+  random_slideshow: boolean
 }
 
-const ImagesPage: React.FC<ImagePageProps> = ({store}: ImagePageProps) => {
+interface ImagePageProps {
+  store: Store
+  settings: SettingsType
+}
+
+const ImagesPage: React.FC<ImagePageProps> = ({store, settings}: ImagePageProps) => {
   const [images, setImages] = useState<ImageData[]>([]);
+  const [activeImagePath, setActiveImagePath] = useState<string>("");
   const [folders, setFolders] = useState<FolderData[]>([])
 
   useEffect(() => {
@@ -52,7 +61,46 @@ const ImagesPage: React.FC<ImagePageProps> = ({store}: ImagePageProps) => {
     }
   }, [folders])
 
-  console.log(folders)
+  /**
+   * When app loads, checks if a random image should be selected,
+   * if so, triggers a click action on a image from the currently active 
+   * folder, changing the wallpaper
+   */
+  useEffect(() => {
+    if(images.length > 0 && settings.random) {
+      const random_image: HTMLElement | null = document.querySelectorAll('.image_display')[Math.floor(Math.random() * images.length)] as HTMLElement
+      if(random_image) random_image.click()
+    }
+  }, [])
+
+  /**
+   * 
+   */
+  useEffect(() => {
+    let interval: NodeJS.Timeout | null = null
+    if(images.length > 0 && settings.slideshow) {
+      interval = setInterval(() => {
+        let next_pos = 0
+        if(settings.random_slideshow) {
+          next_pos = Math.floor(Math.random() * images.length)
+        } else {
+          next_pos = find_currently_active_image() + 1
+          if (next_pos >= images.length) next_pos = 0
+        }
+        setActiveImagePath(images[next_pos].path)
+        set_wallpaper(images[next_pos].path)
+      }, settings.delay * 60 * 1000)
+    }
+    if(interval) return () => clearInterval(interval)
+  }, [settings.delay, settings.slideshow, settings.random_slideshow, activeImagePath])
+
+  function find_currently_active_image() {
+    let active_image_index: number = 0
+    if(activeImagePath) {
+      active_image_index = images.findIndex(image => image.path === activeImagePath)
+    }
+    return active_image_index
+  }
 
   /**
    * Sends the image path to the rust function that handles local image loading 
@@ -61,6 +109,14 @@ const ImagesPage: React.FC<ImagePageProps> = ({store}: ImagePageProps) => {
     try {
       const result: ImageData[] = await invoke('get_images_from_path', {dirPath: folder.path})
       setImages(result)
+    } catch (err) {
+      console.error('Failed to fetch images', err)
+    }
+  }
+
+  async function set_wallpaper(image_path: string) {
+    try {
+      await invoke('set_wallpaper', {path: image_path})
     } catch (err) {
       console.error('Failed to fetch images', err)
     }
@@ -158,7 +214,10 @@ const ImagesPage: React.FC<ImagePageProps> = ({store}: ImagePageProps) => {
         </div>
         <div className="images_container">
           {images.length > 0 ? (
-            images.map(image => <ImageDisplay name={image.name} image_path={image.path} key={image.path}/>
+            images.map(image => <ImageDisplay name={image.name} image_path={image.path} key={image.path} action={() => {
+              setActiveImagePath(image.path)
+              set_wallpaper(image.path)
+            }}/>
           )) : (
             <div className="images_container_message">
               <p>Select a folder to load images.</p>

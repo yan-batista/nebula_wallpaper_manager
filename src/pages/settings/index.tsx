@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { Store } from "tauri-plugin-store-api";
 import MinusIcon from "../../components/icons/MinusIcon";
 import PlusIcon from "../../components/icons/PlusIcon";
@@ -14,10 +13,12 @@ interface SettingsType {
 
 interface SettingsPageProps {
   store: Store
+  settings: SettingsType
+  setSettings: React.Dispatch<React.SetStateAction<SettingsType>>
 }
 
-const SettingsPage: React.FC<SettingsPageProps> = ({store}: SettingsPageProps) => {
-  const [settings, setSettings] = useState<SettingsType>({
+const SettingsPage: React.FC<SettingsPageProps> = ({store,settings, setSettings}: SettingsPageProps) => {
+  /* const [settings, setSettings] = useState<SettingsType>({
     random: false,
     slideshow: false,
     delay: 10,
@@ -37,7 +38,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({store}: SettingsPageProps) =
     }
 
     getStoredSettings()
-  }, []) 
+  }, [])  */
   
   function onClickToggleRandom() {
     setSettings(prevState => ({...prevState, random: !settings.random}))
