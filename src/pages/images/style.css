@@ -56,7 +56,6 @@
   margin-left: 15px;
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
   align-content: flex-start;
   overflow: scroll;
   overflow-x: hidden;

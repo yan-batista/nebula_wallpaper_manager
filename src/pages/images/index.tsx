@@ -2,31 +2,15 @@ import PlusIcon from "../../components/icons/PlusIcon"
 import MinusIcon from "../../components/icons/MinusIcon"
 import FileLine from "../../components/FileLine/index";
 import ImageDisplay from "../../components/ImageDisplay/ImageDisplay";
+import find_currently_active_image from "../../utils/find_currently_active_image";
+import { FolderData, ImageData, SettingsType } from "../../types/types";
 import "./style.css"
 import { open } from '@tauri-apps/api/dialog';
 import { invoke } from "@tauri-apps/api/tauri";
 import { useEffect, useState } from "react";
 import { Store } from "tauri-plugin-store-api";
 
-type ImageData = {
-  name: string;
-  path: string;
-}
-
-type FolderData = {
-  name: string;
-  path: string;
-  active: boolean;
-}
-
-interface SettingsType {
-  random: boolean,
-  slideshow: boolean,
-  delay: number,
-  random_slideshow: boolean
-}
-
-interface ImagePageProps {
+export interface ImagePageProps {
   store: Store
   settings: SettingsType
 }
@@ -36,6 +20,10 @@ const ImagesPage: React.FC<ImagePageProps> = ({store, settings}: ImagePageProps)
   const [activeImagePath, setActiveImagePath] = useState<string>("");
   const [folders, setFolders] = useState<FolderData[]>([])
 
+  /**
+   * Get stored data on mount and set states.
+   * Also selects a random wallpaper based on settings (random on startup)
+   */
   useEffect(() => {
     async function getStoredFolders() {
       let stored_folders: FolderData[] | null = folders
@@ -47,12 +35,30 @@ const ImagesPage: React.FC<ImagePageProps> = ({store, settings}: ImagePageProps)
         if (stored_folders) setFolders(stored_folders)
       }
     }
+
+    async function getStoredActiveImage() {
+      let stored_active_image: string | null = activeImagePath
+      try {
+        stored_active_image = await store.get<string>("active_image")
+      } catch(err) {
+        console.error(err)
+      } finally {
+        if (stored_active_image) setActiveImagePath(stored_active_image)
+      }
+    }
+
+    getStoredActiveImage()
     getStoredFolders()
+
+    if(images.length > 0 && settings.random) {
+      const random_image: HTMLElement | null = document.querySelectorAll('.image_display')[Math.floor(Math.random() * images.length)] as HTMLElement
+      if(random_image) random_image.click()
+    }
   }, []);
 
   /**
-   * If folders variable is not empty,
-   * loads images from active folder
+   * Calls function to load images in case there are folders, and at least
+   * one of them is active.
    */
   useEffect(() => {
     if(folders.length > 0) {
@@ -62,45 +68,27 @@ const ImagesPage: React.FC<ImagePageProps> = ({store, settings}: ImagePageProps)
   }, [folders])
 
   /**
-   * When app loads, checks if a random image should be selected,
-   * if so, triggers a click action on a image from the currently active 
-   * folder, changing the wallpaper
+   * Effect that watches settings related to slideshow configuration, including
+   * the currently selected image. Runs a Interval to change the wallpaper
+   * periodically.
    */
   useEffect(() => {
-    if(images.length > 0 && settings.random) {
-      const random_image: HTMLElement | null = document.querySelectorAll('.image_display')[Math.floor(Math.random() * images.length)] as HTMLElement
-      if(random_image) random_image.click()
-    }
-  }, [])
-
-  /**
-   * 
-   */
-  useEffect(() => {
-    let interval: NodeJS.Timeout | null = null
     if(images.length > 0 && settings.slideshow) {
-      interval = setInterval(() => {
+      const interval = setInterval(() => {
         let next_pos = 0
         if(settings.random_slideshow) {
           next_pos = Math.floor(Math.random() * images.length)
         } else {
-          next_pos = find_currently_active_image() + 1
+          next_pos = find_currently_active_image(images, activeImagePath) + 1
           if (next_pos >= images.length) next_pos = 0
         }
         setActiveImagePath(images[next_pos].path)
+        store.set('active_image', [...folders, images[next_pos].path])
         set_wallpaper(images[next_pos].path)
       }, settings.delay * 60 * 1000)
+      return () => clearInterval(interval)
     }
-    if(interval) return () => clearInterval(interval)
   }, [settings.delay, settings.slideshow, settings.random_slideshow, activeImagePath])
-
-  function find_currently_active_image() {
-    let active_image_index: number = 0
-    if(activeImagePath) {
-      active_image_index = images.findIndex(image => image.path === activeImagePath)
-    }
-    return active_image_index
-  }
 
   /**
    * Sends the image path to the rust function that handles local image loading 
@@ -114,6 +102,10 @@ const ImagesPage: React.FC<ImagePageProps> = ({store, settings}: ImagePageProps)
     }
   }
 
+  /**
+   * uses image path to invoke rust function that changes
+   * desktop wallpaper
+   */
   async function set_wallpaper(image_path: string) {
     try {
       await invoke('set_wallpaper', {path: image_path})
@@ -149,17 +141,20 @@ const ImagesPage: React.FC<ImagePageProps> = ({store, settings}: ImagePageProps)
           path: selectedPath,
           active: true,
         }
-        setFolders(prevState => [...prevState, new_folder])
-        store.set('folders', [...folders, new_folder])
+        setFolders(prevState => {
+          const all_inactive = prevState.map(prev => {
+            if (prev.active === true) return {...prev, active: false}
+            else return {...prev}
+          })
+          store.set('folders', [...all_inactive, new_folder])
+          return [...all_inactive, new_folder]
+        })
       // if folder is already open, just set it to active and fetch images
       } else if(selectedPath && typeof(selectedPath) === 'string' && isFolderAlreadyOpen(selectedPath)) {
           setFolders(prevState => {
             const new_folders = prevState.map(prev => {
-              if (selectedPath === prev.path) {
-                return {...prev, active: true}
-              } else {
-                return {...prev, active: false}
-              }
+              if (selectedPath === prev.path) return {...prev, active: true}
+              else return {...prev, active: false}
             })
             store.set('folders', new_folders)
             return new_folders
@@ -177,6 +172,7 @@ const ImagesPage: React.FC<ImagePageProps> = ({store, settings}: ImagePageProps)
     const filtered_folders = folders.filter(folder => !folder.active)
     setFolders(filtered_folders)
     store.set('folders', filtered_folders)
+    setImages([])
   }
 
   /**
@@ -198,7 +194,6 @@ const ImagesPage: React.FC<ImagePageProps> = ({store, settings}: ImagePageProps)
     })
   }
 
-
   return (
     <>
         <div className="files_container">
@@ -214,10 +209,17 @@ const ImagesPage: React.FC<ImagePageProps> = ({store, settings}: ImagePageProps)
         </div>
         <div className="images_container">
           {images.length > 0 ? (
-            images.map(image => <ImageDisplay name={image.name} image_path={image.path} key={image.path} action={() => {
-              setActiveImagePath(image.path)
-              set_wallpaper(image.path)
-            }}/>
+            images.map(image => <ImageDisplay 
+              name={image.name} 
+              image_path={image.path} 
+              key={image.path} 
+              action={() => {
+                setActiveImagePath(image.path)
+                store.set('active_image', [image.path])
+                set_wallpaper(image.path)
+              }}
+              active={image.path == activeImagePath}
+            />
           )) : (
             <div className="images_container_message">
               <p>Select a folder to load images.</p>

@@ -3,9 +3,13 @@
   flex-direction: column;
   justify-content: flex-end;
   align-items: center;
-  padding: 15px;
-  width: 174.5px;
+  padding: 20px;
+  width: 182px;
   overflow: hidden;
+}
+
+.image_display.active_image_display {
+  background-color: rgba(197, 197, 197, 0.062);
 }
 
 .image_display:hover {
@@ -30,7 +34,7 @@
 }
 
 .thumbnail {
-  width: 100px;
+  width: 120px;
   height: auto;
   user-select: none;
 }

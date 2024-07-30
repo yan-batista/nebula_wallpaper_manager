@@ -1,15 +1,9 @@
-import { Store } from "tauri-plugin-store-api";
 import MinusIcon from "../../components/icons/MinusIcon";
 import PlusIcon from "../../components/icons/PlusIcon";
 import Switch from "../../components/Switch";
+import { SettingsType } from "../../types/types";
 import "./style.css"
-
-interface SettingsType {
-  random: boolean,
-  slideshow: boolean,
-  delay: number,
-  random_slideshow: boolean
-}
+import { Store } from "tauri-plugin-store-api";
 
 interface SettingsPageProps {
   store: Store
@@ -18,28 +12,6 @@ interface SettingsPageProps {
 }
 
 const SettingsPage: React.FC<SettingsPageProps> = ({store,settings, setSettings}: SettingsPageProps) => {
-  /* const [settings, setSettings] = useState<SettingsType>({
-    random: false,
-    slideshow: false,
-    delay: 10,
-    random_slideshow: false
-  })
-
-  useEffect(() => {
-    async function getStoredSettings() {
-      let stored_settings: SettingsType | null = settings
-      try {
-        stored_settings = await store.get<SettingsType>("settings")
-      } catch(err) {
-        console.error(err)
-      } finally {
-        if (stored_settings) setSettings(stored_settings)
-      }
-    }
-
-    getStoredSettings()
-  }, [])  */
-  
   function onClickToggleRandom() {
     setSettings(prevState => ({...prevState, random: !settings.random}))
     store.set('settings', {...settings, random: !settings.random})
