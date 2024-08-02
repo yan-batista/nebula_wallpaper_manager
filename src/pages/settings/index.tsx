@@ -11,7 +11,7 @@ interface SettingsPageProps {
   setSettings: React.Dispatch<React.SetStateAction<SettingsType>>
 }
 
-const SettingsPage: React.FC<SettingsPageProps> = ({store,settings, setSettings}: SettingsPageProps) => {
+const SettingsPage: React.FC<SettingsPageProps> = ({store, settings, setSettings}: SettingsPageProps) => {
   function onClickToggleRandom() {
     setSettings(prevState => ({...prevState, random: !settings.random}))
     store.set('settings', {...settings, random: !settings.random})

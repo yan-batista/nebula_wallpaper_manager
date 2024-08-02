@@ -29,5 +29,8 @@ This application is used to change your desktop wallpaper to one specific image 
 - [Rust](https://www.rust-lang.org/)
 - [Tauri](https://tauri.app/)
 
+## Attribution
+- [Icon: Buraco negro ícones criados por Vector Stall - Flaticon](https://www.flaticon.com/br/icones-gratis/buraco-negro)
+
 ## Author
 - Github - [@yan-batista](https://github.com/yan-batista)

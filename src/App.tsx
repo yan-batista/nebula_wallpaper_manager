@@ -14,6 +14,7 @@ interface SettingsType {
 function App() {
   const [isActive, setIsActive] = useState<boolean>(true);
   const [store, _] = useState<Store>(new Store("store_data.dat"))
+  const [loading, setLoading] = useState<boolean>(true)
   const [settings, setSettings] = useState<SettingsType>({
     random: false,
     slideshow: false,
@@ -30,6 +31,7 @@ function App() {
         console.error(err)
       } finally {
         if (stored_settings) setSettings(stored_settings)
+        setLoading(false)
       }
     }
 
@@ -52,11 +54,11 @@ function App() {
       </header>
 
       <div className={`content ${isActive ? "" : "hidden_page"}`}>
-          <ImagesPage store={store} settings={settings}/>
+          {!loading && <ImagesPage store={store} settings={settings}/>}
       </div>
 
       <div className={`content ${isActive ? "hidden_page" : ""}`}>
-          <SettingsPage store={store} settings={settings} setSettings={setSettings}/>
+          {!loading && <SettingsPage store={store} settings={settings} setSettings={setSettings}/>}
       </div>
     </>
   );

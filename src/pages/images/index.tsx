@@ -18,6 +18,7 @@ export interface ImagePageProps {
 const ImagesPage: React.FC<ImagePageProps> = ({store, settings}: ImagePageProps) => {
   const [images, setImages] = useState<ImageData[]>([]);
   const [activeImagePath, setActiveImagePath] = useState<string>("");
+  const [loadingImages, setLoadingImages] = useState<boolean>(true)
   const [folders, setFolders] = useState<FolderData[]>([])
 
   /**
@@ -49,12 +50,17 @@ const ImagesPage: React.FC<ImagePageProps> = ({store, settings}: ImagePageProps)
 
     getStoredActiveImage()
     getStoredFolders()
+  }, []);
 
-    if(images.length > 0 && settings.random) {
+  /**
+   * Selects a random image from active folder if this setting is enabled
+   */
+  useEffect(() => {
+    if(!loadingImages && images.length > 0 && settings.random) {
       const random_image: HTMLElement | null = document.querySelectorAll('.image_display')[Math.floor(Math.random() * images.length)] as HTMLElement
       if(random_image) random_image.click()
     }
-  }, []);
+  }, [loadingImages])
 
   /**
    * Calls function to load images in case there are folders, and at least
@@ -99,6 +105,8 @@ const ImagesPage: React.FC<ImagePageProps> = ({store, settings}: ImagePageProps)
       setImages(result)
     } catch (err) {
       console.error('Failed to fetch images', err)
+    } finally {
+      setLoadingImages(false)
     }
   }
 

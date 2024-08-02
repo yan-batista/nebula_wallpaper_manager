@@ -31,11 +31,12 @@
     },
     "windows": [
       {
-        "title": "Wallpaper Manager",
+        "title": "Nebula Wallpaper Manager",
         "width": 998,
         "height": 700,
         "resizable": false,
-        "alwaysOnTop": true
+        "alwaysOnTop": false,
+        "visible": false
       }
     ],
     "security": {
@@ -46,12 +47,15 @@
       "targets": "all",
       "identifier": "com.tauri.dev",
       "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
+        "icons/nebulosa24x24.png",
+        "icons/nebulosa32x32.png",
+        "icons/nebulosa128x128.png",
         "icons/icon.ico"
       ]
+    },
+    "systemTray": {
+      "iconPath": "icons/nebulosa24x24.png",
+      "iconAsTemplate": true
     }
   }
 }
