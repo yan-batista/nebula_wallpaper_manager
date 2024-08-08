@@ -44,8 +44,14 @@
     },
     "bundle": {
       "active": true,
-      "targets": "all",
-      "identifier": "com.tauri.dev",
+      "targets": [
+        "msi",
+        "nsis",
+        "deb",
+        "appimage",
+        "rpm"
+      ],
+      "identifier": "com.nebula-wallpaper-manager.dev",
       "icon": [
         "icons/nebulosa24x24.png",
         "icons/nebulosa32x32.png",

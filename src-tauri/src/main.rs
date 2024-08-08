@@ -5,6 +5,7 @@ use serde_json::Value;
 use tauri::{CustomMenuItem, SystemTrayMenu, SystemTrayMenuItem, SystemTray, SystemTrayEvent};
 use tauri::Manager;
 use tauri_plugin_store::StoreBuilder;
+use std::process::Command;
 use std::{env, fs};
 use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
@@ -26,14 +27,9 @@ struct Folder {
     active: bool,
 }
 
-#[tauri::command]
-fn get_pictures_folder_path() -> Result<String, String> {
-    match dirs::picture_dir() {
-        Some(path) => Ok(path.to_string_lossy().to_string()),
-        None => Err("Could not find the Pictures folder".into()),
-    }
-}
-
+/**
+ * returns a list of images (jpg, png or jpeg) from a folder path
+ */
 #[tauri::command]
 fn get_images_from_path(dir_path: String) -> Result<Vec<ImageData>, String> {
     let path = Path::new(&dir_path);
@@ -61,6 +57,9 @@ fn get_images_from_path(dir_path: String) -> Result<Vec<ImageData>, String> {
     Ok(images)
 }
 
+/**
+ * Windows and linux commands to change desktop wallpaper
+ */
 #[tauri::command]
 fn set_wallpaper(path: &str) {
     let os = env::consts::OS;
@@ -77,6 +76,19 @@ fn set_wallpaper(path: &str) {
                 );
             }
         }
+        "linux" => {
+            let status = Command::new("gsettings")
+                .arg("set")
+                .arg("org.cinnamon.desktop.background")
+                .arg("picture-uri")
+                .arg(format!("file://{}", path))
+                .status()
+                .expect("Failed to set wallpaper using gsettings");
+
+            if !status.success() {
+                eprintln!("Failed to set wallpaper: gsettings command returned a non-zero status.");
+            }
+        }
         _ => {
             eprintln!("Unsupported OS: {}", os);
         }
@@ -84,6 +96,7 @@ fn set_wallpaper(path: &str) {
 }
 
 fn main() {
+    // create tray menu
     let random = CustomMenuItem::new("random".to_string(), "Random");
     let quit = CustomMenuItem::new("quit".to_string(), "Quit");
     let tray_menu = SystemTrayMenu::new()
@@ -93,6 +106,7 @@ fn main() {
 
     let tray = SystemTray::new().with_menu(tray_menu);
 
+    // app builder
     tauri::Builder::default()
         .plugin(tauri_plugin_store::Builder::default().build())
         .system_tray(tray)
@@ -157,7 +171,7 @@ fn main() {
             }
             _ => {}
           })
-        .invoke_handler(tauri::generate_handler![get_images_from_path, get_pictures_folder_path, set_wallpaper])
+        .invoke_handler(tauri::generate_handler![get_images_from_path, set_wallpaper])
         .on_window_event(|event| match event.event() {
             tauri::WindowEvent::CloseRequested { api, .. } => {
               event.window().hide().unwrap();
